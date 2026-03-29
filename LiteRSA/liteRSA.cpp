@@ -27,10 +27,9 @@ bool IsPrime(uint32_t n) {
 
 uint32_t GetRandomPrimeNumber() {
 	default_random_engine generator(time(0));
-	uniform_int_distribution<uint32_t> distribution(MIN_RANDOM_PRIME_NUMBER, 100000);
+	uniform_int_distribution<uint32_t> distribution(MIN_GENERATION_RANGE, MAX_GENERATION_RANGE);
 
 	uint32_t result = distribution(generator);
-
 	while (!IsPrime(result)) {
 		result++;
 	}
@@ -44,6 +43,10 @@ int FindIndexOfFirstSignificantOne(bitset<GRID_SIZE> binaryNumber)
 		if (binaryNumber[i] == 1) return i;
 	}
 	return -1;
+}
+
+uint64_t CalculatePhi(uint32_t p, uint32_t q) {
+	return (static_cast<uint64_t>(p) - 1) * (static_cast<uint64_t>(q) - 1);
 }
 
 LITERSA_API Pair GeneratePrimeFactors() {
@@ -61,7 +64,7 @@ LITERSA_API uint64_t GetPrimeFactorsProduct(uint32_t p, uint32_t q) {
 }
 
 LITERSA_API uint64_t GeneratePublicKey(uint32_t p, uint32_t q, uint64_t n) {
-	uint64_t phi = (static_cast<uint64_t>(p) - 1) * (static_cast<unsigned long long>(q) - 1);
+	uint64_t phi = CalculatePhi(p, q);
 
 	uint64_t e = 3;
 	while (true) {
@@ -72,7 +75,7 @@ LITERSA_API uint64_t GeneratePublicKey(uint32_t p, uint32_t q, uint64_t n) {
 }
 
 LITERSA_API uint64_t GeneratePrivateKey(uint32_t p, uint32_t q, uint64_t e) {
-	uint64_t phi = (static_cast<uint64_t>(p) - 1) * (static_cast<unsigned long long>(q) - 1);
+	uint64_t phi = CalculatePhi(p, q);
 
 	uint64_t d = 3;
 	while (true) {

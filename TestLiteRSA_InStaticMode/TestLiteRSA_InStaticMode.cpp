@@ -1,11 +1,9 @@
 #include <iostream>
-#include <vector>
 #include <cassert>
 #include "..\LiteRSA\outer_use.h"
 
 using std::cout;
 using std::string;
-using std::vector;
 
 int main()
 {
