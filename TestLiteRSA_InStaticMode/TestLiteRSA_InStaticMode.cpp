@@ -21,20 +21,13 @@ int main()
 
 	for(char symbol : data) {
 		uint64_t e1t = Encode(symbol, n1, e1);
-		uint64_t d1t = Decode(e1t, n1, d1);
-		assert((uint64_t) symbol == d1t);
+		uint64_t d1e1t = Decode(e1t, n1, d1);
+		assert((uint64_t) symbol == d1e1t);
 
-		uint64_t e0d1e1t = Encode(symbol, n0, e0);
+		uint64_t e0d1e1t = Encode(d1e1t, n0, e0);
 		uint64_t d0e0d1e1t = Decode(e0d1e1t, n0, d0);
 		assert((uint64_t)symbol == d0e0d1e1t);
 	}
 
 	cout << "All tests passed successfully!\n";
-
-	/*char symbol = 'A';
-	long long encodedSymbol = Encode(symbol, n0, e0);
-	long long decodedSymbol = Decode(encodedSymbol, n0, d0);
-
-	cout << encodedSymbol << "\n";
-	cout << (char)decodedSymbol << "\n";*/
 }

@@ -1,9 +1,7 @@
 #include "pch.h"
 #include "inner_use.h"
 #include "outer_use.h"
-#include <stdlib.h>
 #include <time.h>
-#include <math.h>
 #include <bitset>
 #include <random>
 #include <climits>
