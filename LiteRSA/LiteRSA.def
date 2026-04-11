@@ -1,0 +1,8 @@
+LIBRARY
+EXPORTS
+	GeneratePrimeFactors
+	GetPrimeFactorsProduct
+	GeneratePublicKey
+	GeneratePrivateKey
+	Encode
+	Decode

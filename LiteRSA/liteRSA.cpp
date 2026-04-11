@@ -6,9 +6,7 @@
 #include <random>
 #include <climits>
 
-using std::bitset;
-using std::default_random_engine;
-using std::uniform_int_distribution;
+using std::bitset, std::random_device, std::mt19937, std::uniform_int_distribution;
 
 uint64_t GetGCD(uint64_t a, uint64_t b) {
 	if (b == 0) return a;
@@ -24,8 +22,9 @@ bool IsPrime(uint32_t n) {
 }
 
 uint32_t GetRandomPrimeNumber() {
-	default_random_engine generator(time(0));
-	uniform_int_distribution<uint32_t> distribution(MIN_GENERATION_RANGE, MAX_GENERATION_RANGE);
+	random_device rd;
+	mt19937 generator(rd());
+	uniform_int_distribution<> distribution(MIN_GENERATION_RANGE, MAX_GENERATION_RANGE);
 
 	uint32_t result = distribution(generator);
 	while (!IsPrime(result)) {
@@ -43,8 +42,8 @@ int FindIndexOfFirstSignificantOne(bitset<GRID_SIZE> binaryNumber)
 	return -1;
 }
 
-uint64_t CalculatePhi(uint32_t p, uint32_t q) {
-	return (static_cast<uint64_t>(p) - 1) * (static_cast<uint64_t>(q) - 1);
+uint64_t CalculatePhi(Pair pair) {
+	return (static_cast<uint64_t>(pair.first) - 1) * (static_cast<uint64_t>(pair.second) - 1);
 }
 
 LITERSA_API Pair GeneratePrimeFactors() {
@@ -57,12 +56,12 @@ LITERSA_API Pair GeneratePrimeFactors() {
 	return {p, q};
 }
 
-LITERSA_API uint64_t GetPrimeFactorsProduct(uint32_t p, uint32_t q) {
-	return static_cast<uint64_t>(p) * q;
+LITERSA_API uint64_t GetPrimeFactorsProduct(Pair pair) {
+	return static_cast<uint64_t>(pair.first) * pair.second;
 }
 
-LITERSA_API uint64_t GeneratePublicKey(uint32_t p, uint32_t q, uint64_t n) {
-	uint64_t phi = CalculatePhi(p, q);
+LITERSA_API uint64_t GeneratePublicKey(Pair pair, uint64_t n) {
+	uint64_t phi = CalculatePhi(pair);
 
 	uint64_t e = 3;
 	while (true) {
@@ -72,8 +71,8 @@ LITERSA_API uint64_t GeneratePublicKey(uint32_t p, uint32_t q, uint64_t n) {
 	return e;
 }
 
-LITERSA_API uint64_t GeneratePrivateKey(uint32_t p, uint32_t q, uint64_t e) {
-	uint64_t phi = CalculatePhi(p, q);
+LITERSA_API uint64_t GeneratePrivateKey(Pair pair, uint64_t e) {
+	uint64_t phi = CalculatePhi(pair);
 
 	uint64_t d = 3;
 	while (true) {
