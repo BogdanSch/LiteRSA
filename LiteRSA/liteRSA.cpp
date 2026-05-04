@@ -5,6 +5,7 @@
 #include <bitset>
 #include <random>
 #include <climits>
+#include <tchar.h>
 
 using std::bitset, std::random_device, std::mt19937, std::uniform_int_distribution;
 
@@ -36,7 +37,7 @@ uint32_t GetRandomPrimeNumber() {
 
 int FindIndexOfFirstSignificantOne(bitset<GRID_SIZE> binaryNumber)
 {
-	for(int i = binaryNumber.size() - 1; i >= 0; i--) {
+	for (int i = binaryNumber.size() - 1; i >= 0; i--) {
 		if (binaryNumber[i] == 1) return i;
 	}
 	return -1;
@@ -46,6 +47,52 @@ uint64_t CalculatePhi(Pair pair) {
 	return (static_cast<uint64_t>(pair.first) - 1) * (static_cast<uint64_t>(pair.second) - 1);
 }
 
+DWORD CalculateCRC(BYTE* mem, size_t size) {
+	DWORD* mem32 = (DWORD*)mem, crc = 0xFFFFFFFF;
+	size_t count = size / sizeof(DWORD);
+	size_t not_full_count = size % sizeof(DWORD);
+	for (size_t i = 0; i < count; ++i)
+		crc = _mm_crc32_u32(crc, mem32[i]);
+	if (not_full_count) {
+		DWORD value = 0; PBYTE mem8 = (PBYTE)(mem32 + count);
+		for (size_t i = 0; i < not_full_count; ++i) {
+			value |= (DWORD)mem8[i] << 8 * i;
+		}
+		crc = _mm_crc32_u32(crc, value);
+	}
+	crc = ~crc;
+	return crc;
+}
+
+BOOL CheckCB(LPCTSTR fn) {
+	HANDLE h = CreateFile(fn, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+	if (h == INVALID_HANDLE_VALUE) {
+		DWORD err = GetLastError();
+		printf("Error when reading: %d\n", err);
+		return FALSE;
+	}
+
+	BOOL b = FALSE;
+	DWORD size = GetFileSize(h, NULL);
+	if (size > 8) {
+		PBYTE mem8 = new BYTE[size];
+		if (mem8) {
+			DWORD dwBytesRead = 0;
+			BOOL successful = ReadFile(h, mem8, size, &dwBytesRead, NULL);
+
+			if (successful && *(DWORD*)(mem8 + size - 4) == 0xFFFFFFFF)
+			{
+				DWORD cb = CalculateCRC(mem8, size - 8);
+				b = cb == *(DWORD*)(mem8 + size - 8);
+			}
+			free(mem8);
+		}
+	}
+
+	CloseHandle(h);
+	return b;
+}
+
 LITERSA_API Pair GeneratePrimeFactors() {
 	uint32_t p = GetRandomPrimeNumber();
 	uint32_t q = p;
@@ -53,7 +100,7 @@ LITERSA_API Pair GeneratePrimeFactors() {
 		q = GetRandomPrimeNumber();
 	}
 
-	return {p, q};
+	return { p, q };
 }
 
 LITERSA_API uint64_t GetPrimeFactorsProduct(Pair pair) {
@@ -82,7 +129,7 @@ LITERSA_API uint64_t GeneratePrivateKey(Pair pair, uint64_t e) {
 	return d;
 }
 
-LITERSA_API uint64_t Encode(int input, uint64_t n, uint64_t e) {
+LITERSA_API uint64_t Encrypt(uint64_t input, uint64_t n, uint64_t e) {
 	bitset<GRID_SIZE> binaryE(e);
 	int firstSignificantIndexOfOne = FindIndexOfFirstSignificantOne(binaryE);
 	if (firstSignificantIndexOfOne == -1) return -1;
@@ -99,7 +146,7 @@ LITERSA_API uint64_t Encode(int input, uint64_t n, uint64_t e) {
 	return encodedData;
 }
 
-LITERSA_API uint64_t Decode(uint64_t input, uint64_t n, uint64_t d) {
+LITERSA_API uint64_t Decrypt(uint64_t input, uint64_t n, uint64_t d) {
 	bitset<GRID_SIZE> binaryD(d);
 	int firstSignificantIndexOfOne = FindIndexOfFirstSignificantOne(binaryD);
 	if (firstSignificantIndexOfOne == -1) return -1;

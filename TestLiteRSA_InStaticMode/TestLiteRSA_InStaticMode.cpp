@@ -3,9 +3,7 @@
 #include <vector>
 #include "..\LiteRSA\outer_use.h"
 
-using std::cout;
-using std::string;
-using std::vector;
+using std::cout, std::string, std::vector;
 
 int main()
 {
@@ -21,23 +19,23 @@ int main()
 
 	string data = "This is a secret message. NO ONE should be able to read it.";
 	for(char symbol : data) {
-		uint64_t e1t = Encode(symbol, n1, e1);
-		uint64_t d1e1t = Decode(e1t, n1, d1);
+		uint64_t e1t = Encrypt(symbol, n1, e1);
+		uint64_t d1e1t = Decrypt(e1t, n1, d1);
 		assert((uint64_t) symbol == d1e1t);
 
-		uint64_t e0d1e1t = Encode(d1e1t, n0, e0);
-		uint64_t d0e0d1e1t = Decode(e0d1e1t, n0, d0);
+		uint64_t e0d1e1t = Encrypt(d1e1t, n0, e0);
+		uint64_t d0e0d1e1t = Decrypt(e0d1e1t, n0, d0);
 		assert((uint64_t) symbol == d0e0d1e1t);
 	}
 
-	vector<int> numbersToTest = { 0, 1, 42, 12345, 65535, 10000000, 1000000000 };
-	for(int number : numbersToTest) {
-		uint64_t e1d0e0t = Encode(number, n1, e1);
-		uint64_t d1e1d0e0t = Decode(e1d0e0t, n1, d1);
+	vector<uint64_t> numbersToTest = { 0, 1, 42, 12345, 65535, 10000000, 1000000000 };
+	for(uint64_t number : numbersToTest) {
+		uint64_t e1d0e0t = Encrypt(number, n1, e1);
+		uint64_t d1e1d0e0t = Decrypt(e1d0e0t, n1, d1);
 		assert((uint64_t) number == d1e1d0e0t);
 
-		uint64_t e0t = Encode(d1e1d0e0t, n0, e0);
-		uint64_t d0e0t = Decode(e0t, n0, d0);
+		uint64_t e0t = Encrypt(d1e1d0e0t, n0, e0);
+		uint64_t d0e0t = Decrypt(e0t, n0, d0);
 		assert((uint64_t) number == d0e0t);
 	}
 

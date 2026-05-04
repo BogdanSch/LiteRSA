@@ -22,15 +22,15 @@ typedef Pair(*GeneratePrimeFactors)();
 typedef unsigned __int64 (*GetPrimeFactorsProduct)(Pair p);
 typedef unsigned __int64 (*GeneratePublicKey)(Pair p, unsigned __int64 n);
 typedef unsigned __int64 (*GeneratePrivateKey)(Pair p, unsigned __int64 e);
-typedef unsigned __int64 (*Encode)(int input, unsigned __int64 n, unsigned __int64 e);
-typedef unsigned __int64 (*Decode)(unsigned __int64 input, unsigned __int64 n, unsigned __int64 d);
+typedef unsigned __int64 (*Encrypt)(unsigned __int64 input, unsigned __int64 n, unsigned __int64 e);
+typedef unsigned __int64 (*Decrypt)(unsigned __int64 input, unsigned __int64 n, unsigned __int64 d);
 
 GeneratePrimeFactors gpf;
 GetPrimeFactorsProduct gpfp;
 GeneratePublicKey gpk;
 GeneratePrivateKey gprk;
-Encode enc;
-Decode dec;
+Encrypt enc;
+Decrypt dec;
 HMODULE h, hUA, hEN;
 
 static FARPROC tryLoadFunction(HMODULE hModule, const char* functionName) {
@@ -48,11 +48,12 @@ int main(int argc, char* argv[])
         cout << "Failed to load the library!\n";
         return 1;
 	}
-    
-	TCHAR surname[30];
-	TCHAR faculty[30];
-	TCHAR group[30];
-	TCHAR discipline[30];
+
+    const int BUFFER_MAX = 30;
+	TCHAR surname[BUFFER_MAX];
+	TCHAR faculty[BUFFER_MAX];
+	TCHAR group[BUFFER_MAX];
+	TCHAR discipline[BUFFER_MAX];
     if (argv[1][0] == '1') {
         hUA = LoadLibrary(L"Resources_UA.dll");
 
@@ -64,10 +65,10 @@ int main(int argc, char* argv[])
             SetConsoleOutputCP(1251);
             SetConsoleCP(1251);
             setlocale(LC_ALL, "Ukrainian");
-            LoadString(hUA, 101, surname, 30);
-            LoadString(hUA, 102, faculty, 30);
-            LoadString(hUA, 103, group, 30);
-            LoadString(hUA, 104, discipline, 30);
+            LoadString(hUA, 101, surname, BUFFER_MAX);
+            LoadString(hUA, 102, faculty, BUFFER_MAX);
+            LoadString(hUA, 103, group, BUFFER_MAX);
+            LoadString(hUA, 104, discipline, BUFFER_MAX);
             FreeLibrary(hUA);
         }
     } 
@@ -79,10 +80,10 @@ int main(int argc, char* argv[])
 			return 1;
         }
         else {
-            LoadString(hEN, 101, surname, 30);
-            LoadString(hEN, 102, faculty, 30);
-            LoadString(hEN, 103, group, 30);
-            LoadString(hEN, 104, discipline, 30);
+            LoadString(hEN, 101, surname, BUFFER_MAX);
+            LoadString(hEN, 102, faculty, BUFFER_MAX);
+            LoadString(hEN, 103, group, BUFFER_MAX);
+            LoadString(hEN, 104, discipline, BUFFER_MAX);
             FreeLibrary(hEN);
         }
     }
@@ -94,8 +95,8 @@ int main(int argc, char* argv[])
         gpfp = (GetPrimeFactorsProduct)tryLoadFunction(h, "GetPrimeFactorsProduct");
         gpk = (GeneratePublicKey)tryLoadFunction(h, "GeneratePublicKey");
         gprk = (GeneratePrivateKey)tryLoadFunction(h, "GeneratePrivateKey");
-        enc = (Encode)tryLoadFunction(h, "Encode");
-        dec = (Decode)tryLoadFunction(h, "Decode");
+        enc = (Encrypt)tryLoadFunction(h, "Encrypt");
+        dec = (Decrypt)tryLoadFunction(h, "Decrypt");
     }
     catch (const runtime_error& e)
     {
@@ -114,7 +115,7 @@ int main(int argc, char* argv[])
     uint64_t e1 = gpk(primeFactors1, n1);
     uint64_t d1 = gprk(primeFactors1, e1);
 
-    string data = "This is a secret message. NO ONE should be able to read it.";
+    string data = "This is a secret message. NO ONE should be able to read it!";
     for (char symbol : data) {
         uint64_t e1t = enc(symbol, n1, e1);
         uint64_t d1e1t = dec(e1t, n1, d1);
@@ -125,8 +126,8 @@ int main(int argc, char* argv[])
         assert((uint64_t)symbol == d0e0d1e1t);
     }
 
-    vector<int> numbersToTest = { 0, 1, 42, 12345, 65535, 10000000, 1000000000 };
-    for (int number : numbersToTest) {
+    vector<uint64_t> numbersToTest = { 0, 1, 42, 12345, 65535, 10000000, 1000000000 };
+    for (uint64_t number : numbersToTest) {
         uint64_t e1d0e0t = enc(number, n1, e1);
         uint64_t d1e1d0e0t = dec(e1d0e0t, n1, d1);
         assert((uint64_t)number == d1e1d0e0t);
